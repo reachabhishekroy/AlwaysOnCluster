@@ -1,11 +1,11 @@
 trigger: none
 
-# All templates are located in this repository.
+# Create templates in this repository.
 resources:
   repositories:
   - repository: Templates
     type: git
-    name: 'Azure SQLVM Always-On'
+    name: 'AlwaysOn'
 
 variables: 
   paramsroot: $(Pipeline.Workspace)\drop\Parameters
