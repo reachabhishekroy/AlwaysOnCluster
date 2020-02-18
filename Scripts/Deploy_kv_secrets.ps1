@@ -41,7 +41,7 @@ if ($null -eq $objKeyVault)
    Write-Output 'Finishing the deployment of the Azure KeyVault Resource'
    Write-Output 'Check or create the secret'
 
-   # Check if the CloudVDIadmin secret already exists
+   # Check if the admin secret already exists
    $objCloudVDIadminSecret = Get-AzKeyVaultSecret -VaultName $strKeyVaultName -Name $strLocalAdminSecretName -ErrorAction SilentlyContinue
 
    # Create the KeyVault Secret if required
@@ -57,7 +57,7 @@ if ($null -eq $objKeyVault)
 
       # Create the secret
       Write-Output ('Creating secret ' + $strLocalAdminSecretName + '...')
-      New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $strResourceGroupName -Mode Incremental -TemplateParameterFile $ParametersFile -TemplateFile $TemplateFile -secretName $strLocalAdminSecretName1 -secretValue $sstrLocalAdminPassword -Force -Verbose
+      New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $strResourceGroupName -Mode Incremental -TemplateParameterFile $ParametersFile -TemplateFile $TemplateFile -secretName $strLocalAdminSecretName -secretValue $sstrLocalAdminPassword -Force -Verbose
    }
    else
    {
