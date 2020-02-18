@@ -71,16 +71,7 @@ stages:
                     -ResourceGroupParametersFile ${{ variables.paramsroot }}\ResourceGroup\test.parameters.json
 
         azurePowerShellVersion: LatestVersion
-        errorActionPreference: stop
-        
-    - task: AzurePowerShell@4
-      inputs:
-        azureSubscription: 'Azure_test'
-        ScriptType: 'FilePath'
-        ScriptPath: ${{ variables.scriptsroot }}\deploy_secrets.ps1
-
-        azurePowerShellVersion: LatestVersion
-        errorActionPreference: stop        
+        errorActionPreference: stop     
         
         
         
