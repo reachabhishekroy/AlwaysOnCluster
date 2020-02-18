@@ -1,71 +1,17 @@
-param
-(
-   [Parameter(Mandatory=$true)]
-   [System.String]$TemplateFile,
+# define variables 
+$secretname1 = 'mytope' 
+$keyvault1='alwaysonkv01'
 
-   [Parameter(Mandatory=$true)]
-   [System.String]$ParametersFile,
+#Autogenerate complex password
+# Load .NET assembly
+Add-Type -Assembly 'System.Web'
 
-   [Parameter(Mandatory=$true)]
-   [System.String]$ResourceGroupParametersFile,
+# Create a strong password
+Write-Output ('Generating password...')
+[System.String] $strDBAdminPassword = [System.Web.Security.Membership]::GeneratePassword(48, 16)
+[System.Security.SecureString] $sstrDBAdminPassword = ConvertTo-SecureString $strDBAdminPassword -AsPlainText -Force
 
-   [Parameter(Mandatory=$true)]
-   [System.String]$DeploymentName
-
-)
-
-# Declare and define variables
-[System.String] $strLocalAdminSecretName = 'mytope'
-
-# Get Resource Group parameters
-$objResourceGroupParametersFile = Get-Content -Path $ResourceGroupParametersFile | ConvertFrom-Json
-[System.String] $strResourceGroupName = $objResourceGroupParametersFile.parameters.rgName[0].value
-
-# Get the KeyVault Name
-$obKeyVaultParametersFile = Get-Content -Path $ParametersFile | ConvertFrom-Json
-[System.String] $strKeyVaultName = $obKeyVaultParametersFile.parameters.keyVaultName[0].value
-
-# Check if the KeyVault already exists
-Write-Output ('Check if KeyVAult ' + $strKeyVaultName + ' already exists.')
-$objKeyVault = Get-AzKeyVault -VaultName $strKeyVaultName -ResourceGroupName $strResourceGroupName -ErrorAction SilentlyContinue
-
-if ($null -eq $objKeyVault)
-{
-   # Write output
-   Write-Output 'Start deploying the Azure KeyVault Resource'
-
-   # Start Azure Deployment
-   New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $strResourceGroupName -Mode Incremental -TemplateParameterFile $ParametersFile -TemplateFile $TemplateFile -Force -Verbose
-
-   # Write output
-   Write-Output 'Finishing the deployment of the Azure KeyVault Resource'
-   Write-Output 'Check or create the secret'
-
-   # Check if the admin secret already exists
-   $objCloudVDIadminSecret = Get-AzKeyVaultSecret -VaultName $strKeyVaultName -Name $strLocalAdminSecretName -ErrorAction SilentlyContinue
-
-   # Create the KeyVault Secret if required
-   if ($null -eq $objCloudVDIadminSecret)
-   {
-      # Load .NET assembly
-      Add-Type -Assembly 'System.Web'
-
-      # Create a strong password
-      Write-Output ('Generating password...')
-      [System.String] $strLocalAdminPassword = [System.Web.Security.Membership]::GeneratePassword(48, 16)
-      [System.Security.SecureString] $sstrLocalAdminPassword = ConvertTo-SecureString $strLocalAdminPassword -AsPlainText -Force
-
-      # Create the secret
-      Write-Output ('Creating secret ' + $strLocalAdminSecretName + '...')
-      New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName $strResourceGroupName -Mode Incremental -TemplateParameterFile $ParametersFile -TemplateFile $TemplateFile -Name $strLocalAdminSecretName -secretValue $sstrLocalAdminPassword -Force -Verbose
-   }
-   else
-   {
-      # Write output
-      Write-Output ('The secret ' + $strLocalAdminSecretName + ' already exists. Will not do anything.')
-   }
-}
-else
-{
-   Write-Output ('KeyVAult ' + $strKeyVaultName + ' already exists. Will not do anything.')
-}
+# Create new secret with complex password
+Write-Host "`nCreating new secret - $secretname1" 
+#Set-AzureKeyVaultSecret -VaultName $keyvault1 -Name $secretname1 -SecretValue $sstrDBAdminPassword
+Set-AzKeyVaultSecret -VaultName $keyvault1 -Name $secretname1 -SecretValue $sstrDBAdminPassword
